@@ -1,0 +1,84 @@
+services:
+
+  frontend:
+    build:
+      context: ../faro-frontend
+    container_name: faro-frontend
+    restart: unless-stopped
+
+    networks:
+      - faro
+
+
+  backend:
+    build:
+      context: ../faro-backend
+    container_name: faro-backend
+    restart: unless-stopped
+
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY}
+      APP_URL: http://localhost
+
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: faro
+      DB_USERNAME: faro
+      DB_PASSWORD: ${DB_PASSWORD}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - faro
+
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: faro-gateway
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - faro
+    restart: unless-stopped
+
+
+  postgres:
+    image: postgres:16
+    container_name: faro-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: faro
+      POSTGRES_USER: faro
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U faro -d faro"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - faro
+
+
+networks:
+  faro:
+    driver: bridge
+
+
+volumes:
+  postgres_data:
