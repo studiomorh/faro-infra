@@ -1,0 +1,10 @@
+# Apply together with the environment's existing docker-compose.yml.
+# Adds only the visual GeoMap consumer settings; never changes APP_ENV or DB settings.
+services:
+  backend:
+    environment:
+      GEOMAP_PUBLISHED_BASE_ENABLED: ${GEOMAP_PUBLISHED_BASE_ENABLED:-false}
+      GEOMAP_BASE_URL: ${GEOMAP_BASE_URL:-https://api-geomap.studiomorh.com}
+      GEOMAP_BASE_TOKEN: ${GEOMAP_BASE_TOKEN:-}
+      GEOMAP_ASSET_ORIGINS: ${GEOMAP_ASSET_ORIGINS:-https://api-geomap.studiomorh.com}
+      GEOMAP_ALLOW_LOOPBACK_HTTP: "false"
